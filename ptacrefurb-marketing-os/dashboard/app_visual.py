@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 import requests
 from datetime import date
@@ -12,8 +13,6 @@ st.set_page_config(
 
 RED = "#9C0100"
 DARK = "#343434"
-GRAY = "#666666"
-LIGHT_GRAY = "#F7F7F7"
 BORDER = "#D9D9D9"
 
 # -----------------------------
@@ -73,7 +72,6 @@ def money(value):
 def safe_count(df, column, value):
     if df.empty or column not in df.columns:
         return 0
-
     return int((df[column].astype(str).str.lower() == value.lower()).sum())
 
 
@@ -175,43 +173,6 @@ st.markdown(
         text-transform: uppercase;
     }}
 
-    .kpi-grid {{
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 8px;
-        padding: 12px;
-    }}
-
-    .kpi-card {{
-        border: 1px solid {BORDER};
-        height: 92px;
-        padding: 10px;
-        background: #ffffff;
-    }}
-
-    .kpi-label {{
-        font-size: 10px;
-        font-weight: 900;
-        text-transform: uppercase;
-        color: #222222;
-        text-align: center;
-    }}
-
-    .kpi-value {{
-        font-size: 31px;
-        font-weight: 900;
-        text-align: center;
-        margin-top: 8px;
-        color: #111111;
-    }}
-
-    .kpi-sub {{
-        font-size: 11px;
-        color: #555555;
-        text-align: center;
-        margin-top: 2px;
-    }}
-
     .brand-card {{
         display: grid;
         grid-template-columns: 48% 2% 50%;
@@ -299,7 +260,7 @@ st.markdown(
 
 
 # -----------------------------
-# HTML COMPONENT HELPERS
+# HTML HELPERS
 # -----------------------------
 
 def kpi_card(label, value, sub="-- vs last week"):
@@ -310,6 +271,51 @@ def kpi_card(label, value, sub="-- vs last week"):
         <div class="kpi-sub">{sub}</div>
     </div>
     """
+
+
+def render_kpi_grid(cards_html):
+    full_html = f"""
+    <style>
+    .kpi-grid {{
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        padding: 12px;
+        font-family: Arial, sans-serif;
+    }}
+    .kpi-card {{
+        border: 1px solid #D9D9D9;
+        height: 92px;
+        padding: 10px;
+        background: #ffffff;
+        box-sizing: border-box;
+    }}
+    .kpi-label {{
+        font-size: 10px;
+        font-weight: 900;
+        text-transform: uppercase;
+        color: #222222;
+        text-align: center;
+    }}
+    .kpi-value {{
+        font-size: 31px;
+        font-weight: 900;
+        text-align: center;
+        margin-top: 8px;
+        color: #111111;
+    }}
+    .kpi-sub {{
+        font-size: 11px;
+        color: #555555;
+        text-align: center;
+        margin-top: 2px;
+    }}
+    </style>
+    <div class="kpi-grid">
+        {cards_html}
+    </div>
+    """
+    components.html(full_html, height=230, scrolling=False)
 
 
 def table_html(df, columns, empty_message, max_rows=5):
@@ -502,9 +508,8 @@ with row1_col1:
         unsafe_allow_html=True
     )
 
-    st.markdown(
-        '<div class="kpi-grid">'
-        + kpi_card("LinkedIn Followers", linkedin_followers)
+    cards = (
+        kpi_card("LinkedIn Followers", linkedin_followers)
         + kpi_card("Facebook Followers", facebook_followers)
         + kpi_card("Website Visitors", website_visitors)
         + kpi_card("New Leads", total_leads)
@@ -512,9 +517,9 @@ with row1_col1:
         + kpi_card("Quotes Sent", quotes_sent)
         + kpi_card("Pipeline Value", money(pipeline_value))
         + kpi_card("Closed Revenue", money(closed_revenue))
-        + '</div>',
-        unsafe_allow_html=True
     )
+
+    render_kpi_grid(cards)
 
     st.markdown('</div>', unsafe_allow_html=True)
 
